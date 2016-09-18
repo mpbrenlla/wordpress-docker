@@ -1,0 +1,18 @@
+version: '2'
+services:
+  wordpress:
+    build: .
+    volumes:
+      - ./wp-content:/var/www/wp-content
+    env_file: .env
+    ports:
+      - "80:80"
+    links:
+      - mysql
+  mysql:
+    image: mariadb:5.5
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./mysql.conf:/etc/mysql/conf.d/mysql.cnf
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    env_file: .env
