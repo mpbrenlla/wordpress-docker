@@ -1,8 +1,7 @@
-FROM php:7.0.6-fpm-alpine
-MAINTAINER Martín Pérez <mpbrenlla@gmail.com> 
+FROM php:7.0.11-fpm-alpine
+MAINTAINER Martín Pérez <mpbrenlla@gmail.com>
 RUN apk add --no-cache nginx mysql-client supervisor curl bash imagemagick-dev
-RUN apk add --no-cache libtool build-base autoconf && docker-php-ext-install -j$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) iconv gd mbstring fileinfo curl xmlreader xmlwriter spl ftp mysqli opcache && pecl install imagick && docker-php-ext-enable imagick && apk del libtool build-base autoconf
-
+RUN echo "http://dl-4.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories && apk add --no-cache libtool build-base autoconf shadow && docker-php-ext-install -j$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) iconv gd mbstring fileinfo curl xmlreader xmlwriter spl ftp mysqli opcache && pecl install imagick && docker-php-ext-enable imagick && apk del libtool build-base autoconf 
 ENV WORKDIR_ROOT /var/www/wp-content
 
 ENV WP_ROOT /usr/src/wordpress
@@ -12,12 +11,14 @@ ENV WP_DOWNLOAD_URL https://wordpress.org/wordpress-$WP_VERSION.tar.gz
 
 RUN curl -o wordpress.tar.gz -SL $WP_DOWNLOAD_URL && echo "$WP_SHA1 *wordpress.tar.gz" | sha1sum -c - && tar -xzf wordpress.tar.gz -C $(dirname $WP_ROOT) && rm wordpress.tar.gz
 
-RUN adduser -D www-data -s /bin/bash -G www-data
+#RUN adduser -D www-data -s /bin/bash -G www-data
 
 VOLUME $WORKDIR_ROOT
-WORKDIR WORKDIR_ROOT
+WORKDIR $WORKDIR_ROOT
 
-RUN chown -R www-data:www-data  WORKDIR_ROOT
+RUN chown -R www-data:www-data  $WORKDIR_ROOT
+RUN usermod -u 1000 www-data
+RUN groupmod -g 1000 www-data
 
 COPY wp-config.php $WP_ROOT
 RUN chown -R www-data:www-data $WP_ROOT && chmod 640 $WP_ROOT/wp-config.php
