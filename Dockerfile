@@ -41,6 +41,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY vhost.conf /etc/nginx/conf.d/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log && chown -R www-data:www-data /var/lib/nginx
 
+EXPOSE 80
+
 # test mysql connection is up for running next commands
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT [ "docker-entrypoint.sh" ]

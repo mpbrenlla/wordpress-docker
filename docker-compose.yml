@@ -1,18 +1,39 @@
 version: '2'
 services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    ports:
+      - 80:80
+    networks:
+      - reverse-proxy
   wordpress:
+    depends_on:
+       - db
+       - nginx-proxy
     build: .
     volumes:
       - ./wp-content:/var/www/wp-content
+    networks:
+      - back
+      - reverse-proxy
     env_file: .env
-    ports:
-      - "80:80"
-    links:
-      - mysql
-  mysql:
+
+  db:
     image: mariadb:5.5
     volumes:
       - ./mysql:/var/lib/mysql
       - ./mysql.conf:/etc/mysql/conf.d/mysql.cnf
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-    env_file: .env
+    networks:
+      - back
+    env_file: .env-db
+
+networks:
+  reverse-proxy:
+    external:
+      name: reverse-proxy
+  back:
+    driver: bridge
+
